@@ -16,19 +16,47 @@ int main(int argc, char **argv)
 
     const char *a_path = argv[1];
     const char *b_path = argv[2];
+    const char *result_path = argv[3];
 
     if (access(a_path, R_OK) != 0)
     {
-        fputs("The first file does not exist or cannot be accessed.\n", stderr);
+        fputs("The first file does not exist or cannot be accessed\n", stderr);
         return -1;
     }
     if (access(b_path, R_OK) != 0)
     {
-        fputs("The second file does not exist or cannot be accessed.\n", stderr);
+        fputs("The second file does not exist or cannot be accessed\n", stderr);
         return -1;
     }
 
-    const char *result_path = argv[3];
+    if (access(result_path, R_OK) == 0)
+    {
+        fputs("Result file already exist\n", stderr);
+        return -1;
+    }
+
+    StatData *a_data;
+    StatData *b_data;
+    StatData *result_data;
+    size_t a_records_count;
+    size_t b_records_count;
+    size_t result_records_count = 0;
+
+    LoadDump(&a_data, &a_records_count, a_path);
+    LoadDump(&b_data, &b_records_count, b_path);
+
+    JoinDump(a_data, a_records_count, b_data, b_records_count, &result_data, &result_records_count);
+
+    free(a_data);
+    free(b_data);
+
+    SortDump(&result_data, result_records_count);
+
+    StoreDump(result_data, result_records_count, result_path);
+
+    PrintTable(&result_data, result_records_count, stdout);
+
+    free(result_data);
 
     return 0;
 }

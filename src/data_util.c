@@ -3,7 +3,7 @@
 
 int StoreDump(StatData *data_ptr, size_t record_count, const char *file_path)
 {
-    FILE *fd = fopen(file_path, "wb");
+    FILE *fd = fopen(file_path, "wb+");
 
     if (fd == NULL)
     {
@@ -19,7 +19,7 @@ int StoreDump(StatData *data_ptr, size_t record_count, const char *file_path)
         {
             records_to_write = records_left;
         }
-        fwrite(data_ptr, sizeof(StatData), records_to_write, fd);
+        fwrite(data_ptr + record_count - records_left, sizeof(StatData), records_to_write, fd);
         records_left -= records_to_write;
         if (records_left == 0)
         {
@@ -61,7 +61,7 @@ int LoadDump(StatData **data_ptr, size_t *records_count, const char *file_path)
             current_buffer_size = records_read * sizeof(StatData) + CHUNK_SIZE;
         }
         size_t read_count = fread(
-            tmp_data_ptr + records_read * sizeof(StatData),
+            tmp_data_ptr + records_read,
             sizeof(StatData), CHUNK_SIZE / sizeof(StatData),
             fd);
         records_read += read_count;
@@ -165,8 +165,8 @@ int JoinDump(
                 if (list_size == list_capacity)
                 {
                     list_capacity += 16;
-                    void *tmp_1 = realloc(result_array, list_capacity);
-                    void *tmp_2 = realloc(ids_array, list_capacity);
+                    void *tmp_1 = realloc(result_array, list_capacity * sizeof(StatData));
+                    void *tmp_2 = realloc(ids_array, list_capacity * sizeof(long));
                     if (tmp_1 == NULL || tmp_2 == NULL)
                     {
                         // can't allocate memory
@@ -180,6 +180,14 @@ int JoinDump(
             }
         }
     }
+
+    void *tmp = realloc(result_array, list_size * sizeof(StatData));
+    if (tmp == NULL)
+    {
+        free(result_array);
+        return ALLOCATION_ERROR;
+    }
+    result_array = tmp;
 
     *result_ptr = result_array;
     *result_records_count = list_size;
