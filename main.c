@@ -211,10 +211,56 @@ int JoinDump(
     return 0;
 }
 
-// Sort data in array by 'cost' field
-int SortDump()
+int cmp(const void *a_ptr, const void *b_ptr)
 {
+    if (((StatData *)a_ptr)->cost < ((StatData *)b_ptr)->cost)
+    {
+        return -1;
+    }
+    else if (((StatData *)a_ptr)->cost  > ((StatData *)b_ptr)->cost)
+    {
+        return 1;
+    }
+    // if (((StatData *)a_ptr)->cost  == ((StatData *)b_ptr)->cost)
+    else
+    {
+        return 0;
+    }
+}
+// Sort data in array by 'cost' field
+int SortDump(StatData **data_ptr, const size_t data_records_count)
+{
+    qsort(*data_ptr, data_records_count, sizeof(StatData), cmp);
+
     return 0;
+}
+
+#define BINARY_NUMBER_OUTPUT(num,fd) do{int t=num;size_t i=3;do{i--;fputc((((t&(1<<i))>>i)&0x01)+'0',fd);}while(i!=0);}while(0)
+
+void PrintTable(StatData **data_ptr, const size_t data_records_count, const size_t elements_to_print, FILE *fd)
+{
+    fputs("+------------+-------------+------------+---------+--------+\n", fd);
+    fputs("|     id     |    count    |    cost    | primary |  mode  |\n", fd);
+    fputs("+------------+-------------+------------+---------+--------+\n", fd);
+    for (size_t i = 0; i < elements_to_print; i++)
+    {
+        fprintf(fd, "| 0x%08lX | %11d |  %4.3e |    ", (*data_ptr)[i].id, (*data_ptr)[i].count, (*data_ptr)[i].cost);
+        if ((*data_ptr)[i].primary == 0)
+        {
+            fputc('n', fd);
+        }
+        else
+        {
+            fputc('y', fd);
+        }
+        fprintf(fd, "    |  0b");
+        BINARY_NUMBER_OUTPUT((*data_ptr)[i].mode, fd);
+        fprintf(fd, " |");
+
+        fputc('\n', fd);
+    }
+    fputs("+------------+-------------+------------+---------+--------+\n", fd);
+    // put table to buffer
 }
 
 #define ARRAY_SIZE(x) ((sizeof(x)) / (sizeof((x)[0])))
@@ -251,6 +297,9 @@ int main()
         &case_1_in_a[0], ARRAY_SIZE(case_1_in_a),
         &case_1_in_b[0], ARRAY_SIZE(case_1_in_b),
         &result_data, &result_records_count);
+
+    SortDump(&result_data, result_records_count);
+    PrintTable(&result_data, result_records_count, 2, stdout);
 
     // StoreDump(test_array, ARRAY_SIZE(test_array), "./storage.bin");
 
