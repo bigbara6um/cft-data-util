@@ -23,7 +23,6 @@ typedef enum ErrorCodes
     FILE_ERROR,
 } ErrorCodes;
 
-// for tests only
 #define CHUNK_SIZE (sizeof(StatData) * 16)
 
 // ------

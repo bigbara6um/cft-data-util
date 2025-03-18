@@ -31,7 +31,7 @@ int main(int argc, char **argv)
 
     if (access(result_path, R_OK) == 0)
     {
-        fputs("Result file already exist\n", stderr);
+        fputs("The file for the results already exists\n", stderr);
         return -1;
     }
 
@@ -54,7 +54,12 @@ int main(int argc, char **argv)
 
     StoreDump(result_data, result_records_count, result_path);
 
-    PrintTable(&result_data, result_records_count, stdout);
+    size_t t = result_records_count;
+    if (t > 10)
+    {
+        t = 10;
+    }
+    PrintTable(&result_data, t, stdout);
 
     free(result_data);
 

@@ -7,6 +7,9 @@ include(CPack)
 
 include(GenerateExportHeader)
 
+SET(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Werror -Wextra")
+SET(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -ggdb3")
+
 # Build sources
 set(
     data_lib_src
